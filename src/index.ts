@@ -1,6 +1,10 @@
 import express, { Application } from "express";
 
-const app:Application = express();
+const app = express();
+const expressWs = require("express-ws")(app);
+const WebSocket = require('ws');
+
+
 const port = process.env.PORT || 3000;
 
 
@@ -25,6 +29,12 @@ app.use(express.json());
 
 app.get('/_/health', async (req, res) => {
     res.sendStatus(200);
+});
+
+app.get('/ping', async (req, res) => {
+    res.status(200).json({
+        status:"ok"
+    });
 });
 
 
@@ -59,6 +69,32 @@ app.get('/models', async (req, res, next) => {
     }
   
 });
+
+// @ts-ignore
+app.ws("/echo", async (ws, req) => {
+    console.log("received ws connection");
+    ws.on('message', (msg) => {
+        setTimeout(() => {
+            if (ws.readyState === WebSocket.OPEN) ws.send(msg);
+        }, 500); 
+    });
+
+
+    // ws.on("message", async (msg) => {
+    //  console.log("received ws msg");
+    //   if (typeof msg === "string") {
+    //     console.log(msg);
+    //   } else {
+    //     console.log(msg);
+    //     // STTConnector.stream(msg);
+    //   }
+    // });
+  
+    // ws.on("close", () => {
+    // //   STTConnector.destroy();
+    // });
+  });
+
 
 
 app.listen(port, () => {
