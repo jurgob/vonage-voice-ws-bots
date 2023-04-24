@@ -64,11 +64,16 @@ const WS_CALLBACK_URL = `wss://${SERVER_URL_DOMAIN}`
 
 console.log(`HOSTNAME: ${SERVER_URL_DOMAIN}`)
 
+function getDomain(url){
+    const domain = url.split('://')[1]
+    return domain;
+}
+
 const voiceEvent = async (req, res, next) => {
     const { logger, csClient } = req.nexmo;
 
     try { 
-        logger.info("voiceEvent", { req_body   : req.body})
+        // logger.info("voiceEvent", { req_body   : req.body})
         res.json({})
 
     } catch (err) {
@@ -79,12 +84,12 @@ const voiceEvent = async (req, res, next) => {
 }
 
 const voiceAnswer = async (req, res, next) => {
-    const { logger, csClient } = req.nexmo;
+    const { logger, csClient,config } = req.nexmo;
     logger.info("req", { req_body   : req.body})
     try {
         
         // const wsboturl = `${WS_CALLBACK_URL}/echo`
-        const wsboturl = `${WS_CALLBACK_URL}/transcribe`
+        const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
 
 
         return res.json([
@@ -110,8 +115,25 @@ const voiceAnswer = async (req, res, next) => {
 
 }
 
+const route = (app, express) => {
+    app.post("/webhook/transcriptions", async (req, res) => {
+        const { logger, csClient, config } = req.nexmo;
+
+        try {
+            const data = req.body
+            console.log(`TRANSCRIPTION RCV: ${data.results[0].alternatives[0].transcript}`)
+            // const { data } = await csClient.get(`/v3/users/${username}`)
+            res.json(req.body)
+        } catch (err) {
+            logger.error("Error on /api/users/:username route", err)
+        }
+    })
+}
+
+
 
 module.exports = {
     voiceEvent,
-    voiceAnswer
+    voiceAnswer,
+    route
 }

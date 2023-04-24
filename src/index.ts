@@ -1,5 +1,5 @@
 import express, { Application } from "express";
-
+import axios from "axios";
 const app = express();
 const expressWs = require("express-ws")(app);
 const WebSocket = require('ws');
@@ -110,7 +110,9 @@ app.ws("/echo", async (ws, req) => {
 
   // @ts-ignore
 app.ws("/transcribe", async (ws, req) => {
-    console.log("received ws connection transcribe");
+    const {webhook_url, webhook_method} = req.query;
+    // axios
+    console.log("received ws connection transcribe", {webhook_method, webhook_url});
     const request = {
         audio: {
 
@@ -127,9 +129,32 @@ app.ws("/transcribe", async (ws, req) => {
         .streamingRecognize(request)
         .on("error", console.error)
         .on("data", (data: any) => {
-            // console.log('streaming rec res',data);
+            console.log('streaming rec res',data);
 
             console.log('TRANSCRIBE> ',data.results[0].alternatives[0].transcript);
+            if (webhook_url){
+
+                let webhook_request:any = {
+                    url: webhook_url,
+                    method: webhook_method,
+                };
+                if (webhook_method === 'POST'){
+                    webhook_request.data = data; 
+                }else if (webhook_method === 'GET'){
+                    webhook_request.params = data;
+                }
+                console.log(`webhook_request`, webhook_request)
+                //hit back the webhook in background
+                axios(webhook_request)
+                    .then((res) => {
+                        console.log(`statusCode: ${res.status}`)
+                        console.log(res)
+                    })
+                    .catch((error) => {
+                        console.error(error)
+                    })
+            }
+
             // this.config.handler();
             //ws.send(msg);
         });
