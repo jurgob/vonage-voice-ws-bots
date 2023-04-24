@@ -41,7 +41,7 @@ async function ngrokTunnel(){
 }
 
 async function tunnelFunction(service){
-    if(["ngrok" , "localtunnel"].includes(service) === false) throw new Error("service not supported")
+    if(["ngrok" , "lt"].includes(service) === false) throw new Error("service not supported")
     
     if(service === "ngrok"){
         return ngrokTunnel()
