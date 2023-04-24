@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-    organization:"org-oMJBQkryXF2ijjAwXneePuI2",
+    organization:process.env.OPENAI_ORG_ID,
     apiKey: process.env.OPENAI_API_KEY,
 });
 
