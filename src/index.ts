@@ -3,7 +3,7 @@ import express, { Application } from "express";
 const app = express();
 const expressWs = require("express-ws")(app);
 const WebSocket = require('ws');
-
+const {transcribe} = require("./speech2text");
 
 const port = process.env.PORT || 3000;
 
@@ -24,7 +24,12 @@ function httpError(err:any, res:any){
     }
 }
 
+//speech to text
 
+
+
+
+//http server
 app.use(express.json());
 
 app.get('/_/health', async (req, res) => {
@@ -37,6 +42,15 @@ app.get('/ping', async (req, res) => {
     });
 });
 
+app.get('/transcribe', async (req, res) => {
+    try{
+        console.log('transcribe')
+        const text = await transcribe();
+        res.json(text).status(200);
+    }catch(err){
+        httpError(err, res);
+    }
+});
 
 app.get('/completitions', async (req, res, next) => {
     try{
@@ -66,8 +80,7 @@ app.get('/models', async (req, res, next) => {
             res.json(models.data).status(models.status);
     }catch(err){
         httpError(err, res);
-    }
-  
+    } 
 });
 
 // @ts-ignore
