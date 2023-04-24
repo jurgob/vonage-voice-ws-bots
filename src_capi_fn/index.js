@@ -60,7 +60,7 @@ const {
 
 const DATACENTER = `https://api.nexmo.com` 
 const SERVER_URL_DOMAIN=process.env.SERVER_URL_DOMAIN
-const WS_CALLBACK_URL = `wss://${SERVER_URL_DOMAIN}/echo`
+const WS_CALLBACK_URL = `wss://${SERVER_URL_DOMAIN}`
 
 console.log(`HOSTNAME: ${SERVER_URL_DOMAIN}`)
 
@@ -82,6 +82,11 @@ const voiceAnswer = async (req, res, next) => {
     const { logger, csClient } = req.nexmo;
     logger.info("req", { req_body   : req.body})
     try {
+        
+        // const wsboturl = `${WS_CALLBACK_URL}/echo`
+        const wsboturl = `${WS_CALLBACK_URL}/transcribe`
+
+
         return res.json([
             {
                 "action": "talk",
@@ -92,7 +97,7 @@ const voiceAnswer = async (req, res, next) => {
               endpoint: [
                 {
                   type: "websocket",
-                  uri: WS_CALLBACK_URL,
+                  uri: wsboturl,
                   "content-type": "audio/l16;rate=16000",
                 },
               ],

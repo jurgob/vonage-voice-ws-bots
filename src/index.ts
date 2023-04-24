@@ -3,7 +3,7 @@ import express, { Application } from "express";
 const app = express();
 const expressWs = require("express-ws")(app);
 const WebSocket = require('ws');
-const {transcribe} = require("./speech2text");
+const {transcribe,client} = require("./speech2text");
 
 const port = process.env.PORT || 3000;
 
@@ -42,7 +42,7 @@ app.get('/ping', async (req, res) => {
     });
 });
 
-app.get('/transcribe', async (req, res) => {
+app.get('/trans_file', async (req, res) => {
     try{
         console.log('transcribe')
         const text = await transcribe();
@@ -85,7 +85,7 @@ app.get('/models', async (req, res, next) => {
 
 // @ts-ignore
 app.ws("/echo", async (ws, req) => {
-    console.log("received ws connection");
+    console.log("received ws connection echo");
     ws.on('message', (msg) => {
         setTimeout(() => {
             if (ws.readyState === WebSocket.OPEN) ws.send(msg);
@@ -107,6 +107,47 @@ app.ws("/echo", async (ws, req) => {
     // //   STTConnector.destroy();
     // });
   });
+
+  // @ts-ignore
+app.ws("/transcribe", async (ws, req) => {
+    console.log("received ws connection transcribe");
+    const request = {
+        audio: {
+
+        },
+        config: {
+            encoding: 'LINEAR16',
+            sampleRateHertz: 16000,
+            languageCode: 'en-US',
+        },
+        interimResults: false,
+    }
+
+    const gRecognizeStream = client
+        .streamingRecognize(request)
+        .on("error", console.error)
+        .on("data", (data: any) => {
+            // console.log('streaming rec res',data);
+
+            console.log('TRANSCRIBE> ',data.results[0].alternatives[0].transcript);
+            // this.config.handler();
+            //ws.send(msg);
+        });
+
+    ws.on('message', (msg) => {
+        if (ws.readyState === WebSocket.OPEN) {
+            if (typeof msg !== "string"){
+                gRecognizeStream.write(msg);
+            }
+        }
+    });
+
+    ws.on("close", () => {
+        gRecognizeStream.destroy();
+    });
+
+})
+
 
 
 
