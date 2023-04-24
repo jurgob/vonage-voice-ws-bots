@@ -6,14 +6,14 @@ const fs = require('fs');
 
 async function localTunnel(){
   const tunnel = await localtunnel({ port: 3000 });
-  const tunnelCapiFn = await localtunnel({ port: 3001 });
+  const tunnelCapiFn = await localtunnel({ port: 5001 });
 
   const tunnelDomain = tunnel.clientId+".loca.lt"
   const tunnelDomainCapiFn = tunnelCapiFn.clientId+".loca.lt"
 
   return [
     {domain: tunnelDomain,port:3000},
-    {domain: tunnelDomainCapiFn,port:3001}
+    {domain: tunnelDomainCapiFn,port:5001}
   ]
 }
 
@@ -27,7 +27,7 @@ async function ngrokTunnel(){
     url = url.split('://')[1]
 
     let url2 = await ngrok.connect({
-        port:3001,
+        port:5001,
         region: 'eu',
         bind_tls: true
     });
@@ -36,7 +36,7 @@ async function ngrokTunnel(){
     console.log(url2)
     return [
         {domain: url,port:3000},
-        {domain: url2,port:3001}
+        {domain: url2,port:5001}
     ]
 }
 

@@ -91,12 +91,14 @@ const voiceAnswer = async (req, res, next) => {
         // const wsboturl = `${WS_CALLBACK_URL}/echo`
         // const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
         const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
-
+        
+        // let text = "real time transcription"
+        let text = "ask me anything"
 
         return res.json([
             {
                 "action": "talk",
-                "text": "You are listening to a Call made with Voice API"
+                "text": text
             },
             {
               action: "connect",
