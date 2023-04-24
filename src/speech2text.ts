@@ -5,7 +5,8 @@ export async function transcribe() {
     console.log('transcribe inner')
   // The path to the remote LINEAR16 file
   const gcsUri = 'https://github.com/rafaelreis-hotmart/Audio-Sample-files/blob/master/sample.wav?raw=true';
-  //cloud-samples-data/speech/brooklyn_bridge.wav
+//   const gcsUri = 'gc://cloud-samples-data/speech/brooklyn_bridge.wav';
+  //
 
 
   // The audio file's encoding, sample rate in hertz, and BCP-47 language code

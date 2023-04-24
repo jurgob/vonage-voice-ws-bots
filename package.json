@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "source .env.local ; nodemon src/index.ts",
+    "dev": "source .env ; nodemon src/index.ts",
     "prepare": "touch .env.local",
     "test": "jest --coverage",
     "build": "tsc",

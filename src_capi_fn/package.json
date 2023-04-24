@@ -7,7 +7,7 @@
     "node": "14.x"
   },
   "scripts": {
-    "start": "source ../.env.local && conversation-api-function run .| bunyan"
+    "start": "source ../.env && conversation-api-function run .| bunyan"
   },
   "author": "",
   "license": "ISC",
