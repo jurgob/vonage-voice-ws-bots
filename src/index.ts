@@ -1,9 +1,16 @@
 import express, { Application } from "express";
 import axios from "axios";
+
+const { Readable } = require('stream');
+const isBuffer = require('is-buffer')
+const chunkingStreams = require('chunking-streams');
+var SizeChunker = chunkingStreams.SizeChunker;
+
+
 const app = express();
 const expressWs = require("express-ws")(app);
 const WebSocket = require('ws');
-const {transcribe,client} = require("./speech2text");
+const {transcribe,client,ttsClient} = require("./speech2text");
 
 const port = process.env.PORT || 3000;
 
@@ -91,32 +98,14 @@ app.ws("/echo", async (ws, req) => {
             if (ws.readyState === WebSocket.OPEN) ws.send(msg);
         }, 500); 
     });
-
-
-    // ws.on("message", async (msg) => {
-    //  console.log("received ws msg");
-    //   if (typeof msg === "string") {
-    //     console.log(msg);
-    //   } else {
-    //     console.log(msg);
-    //     // STTConnector.stream(msg);
-    //   }
-    // });
-  
-    // ws.on("close", () => {
-    // //   STTConnector.destroy();
-    // });
   });
 
-  // @ts-ignore
+// @ts-ignore
 app.ws("/transcribe", async (ws, req) => {
     const {webhook_url, webhook_method} = req.query;
     // axios
     console.log("received ws connection transcribe", {webhook_method, webhook_url});
     const request = {
-        audio: {
-
-        },
         config: {
             encoding: 'LINEAR16',
             sampleRateHertz: 16000,
@@ -173,6 +162,104 @@ app.ws("/transcribe", async (ws, req) => {
 
 })
 
+//ASSISTANT
+
+
+// @ts-ignore
+app.ws("/assistant", async (ws, req) => {
+    const {webhook_url, webhook_method} = req.query;
+    // axios
+    console.log("received ws connection transcribe", {webhook_method, webhook_url});
+    const request = {
+        config: {
+            encoding: 'LINEAR16',
+            sampleRateHertz: 16000,
+            languageCode: 'en-US',
+        },
+        interimResults: false,
+    }
+
+    const gRecognizeStream = client
+        .streamingRecognize(request)
+        .on("error", console.error)
+        .on("data", async (data: any) => {
+            console.log('streaming rec res',data);
+
+            const prompt = data.results[0].alternatives[0].transcript;
+            console.log('TRANSCRIBE> ',prompt);
+
+            const completion = await openai.createCompletion({
+               model: "text-davinci-003",
+                prompt,
+                max_tokens: 150,
+            });
+            const completition_text = completion.data.choices[0].text;
+            
+            console.log(`completition_text ${completition_text}`)
+            const [ttsResponse] = await ttsClient.synthesizeSpeech({
+                input: {text: completition_text},
+                voice: {languageCode: 'en-US', ssmlGender: 'NEUTRAL'},
+                audioConfig: {
+                    audioEncoding: 'LINEAR16',
+                    sampleRateHertz: 16000
+                },
+            })
+
+            console.log(`ttsResponse`, ttsResponse)
+            var chunker = new SizeChunker({
+                chunkSize: 640 // must be a number greater than zero. 
+            });
+            
+            const audioStream = Readable.from(ttsResponse.audioContent);
+
+            audioStream.pipe(chunker);
+            chunker.on('data', function(chunk: any) {
+                const data = chunk.data;
+                let buf: any;
+                if (data.length == 640){
+                    try {
+                       ws.send(data);
+                    }
+                    catch (e) {
+                    };
+                }
+                else{
+                    buf += data;
+                    if (buf.length == 640){
+                        try {
+                           ws.send(data);
+                        }
+                        catch (e) {
+                        };
+                        buf = null;
+                    }
+                }
+            });
+        
+
+            // ttsResponse.
+
+            
+            // ws.send(ttsResponse.audioContent)
+
+            // res.json(completion.data).status(completion.status);
+
+            //ws.send(msg);
+        });
+
+    ws.on('message', (msg) => {
+        if (ws.readyState === WebSocket.OPEN) {
+            if (typeof msg !== "string"){
+                gRecognizeStream.write(msg);
+            }
+        }
+    });
+
+    ws.on("close", () => {
+        gRecognizeStream.destroy();
+    });
+
+})
 
 
 

@@ -1,5 +1,7 @@
 const speech = require('@google-cloud/speech');
+const textToSpeech = require('@google-cloud/text-to-speech');
 export const client = new speech.SpeechClient();
+export const ttsClient = new textToSpeech.TextToSpeechClient();
 
 
 export async function transcribe() {

@@ -89,7 +89,8 @@ const voiceAnswer = async (req, res, next) => {
     try {
         
         // const wsboturl = `${WS_CALLBACK_URL}/echo`
-        const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
+        // const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
+        const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
 
 
         return res.json([
