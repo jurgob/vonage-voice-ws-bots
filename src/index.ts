@@ -236,18 +236,9 @@ app.ws("/assistant", async (ws, req) => {
                 }
             });
         
-
-            // ttsResponse.
-
-            
-            // ws.send(ttsResponse.audioContent)
-
-            // res.json(completion.data).status(completion.status);
-
-            //ws.send(msg);
         });
 
-    ws.on('message', (msg) => {
+    ws.on('message', (msg: any) => {
         if (ws.readyState === WebSocket.OPEN) {
             if (typeof msg !== "string"){
                 gRecognizeStream.write(msg);

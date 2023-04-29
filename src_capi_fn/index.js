@@ -88,12 +88,14 @@ const voiceAnswer = async (req, res, next) => {
     logger.info("req", { req_body   : req.body})
     try {
         
-        // const wsboturl = `${WS_CALLBACK_URL}/echo`
+        const wsboturl = `${WS_CALLBACK_URL}/echo`
+        let text = "hello, this is an echo bot, I will now repeat what you say"
+
         // const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
-        const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
+        // let text = "real time ttranscription"
         
-        // let text = "real time transcription"
-        let text = "ask me anything"
+        // const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST?token`
+        // let text = "ask me anything"
 
         return res.json([
             {
