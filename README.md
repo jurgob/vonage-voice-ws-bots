@@ -20,9 +20,10 @@ npm i
 ## run it locally
 create a .env.local documents and put in it: 
 
-export VA_PRJ_DIR="<your prj absolute path>"
+```bash
 export OPENAI_API_KEY="<open ai key>"
 export OPENAI_ORG_ID="<open org id>"
+```
 
 create a file `gapp-creds.json`
 

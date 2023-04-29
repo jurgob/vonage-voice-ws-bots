@@ -10,7 +10,11 @@ var SizeChunker = chunkingStreams.SizeChunker;
 const app = express();
 const expressWs = require("express-ws")(app);
 const WebSocket = require('ws');
-const {transcribe,client,ttsClient} = require("./speech2text");
+
+const speech = require('@google-cloud/speech');
+const textToSpeech = require('@google-cloud/text-to-speech');
+const client = new speech.SpeechClient();
+const ttsClient = new textToSpeech.TextToSpeechClient();
 
 const port = process.env.PORT || 3000;
 
@@ -49,15 +53,6 @@ app.get('/ping', async (req, res) => {
     });
 });
 
-app.get('/trans_file', async (req, res) => {
-    try{
-        console.log('transcribe')
-        const text = await transcribe();
-        res.json(text).status(200);
-    }catch(err){
-        httpError(err, res);
-    }
-});
 
 app.get('/completitions', async (req, res, next) => {
     try{
