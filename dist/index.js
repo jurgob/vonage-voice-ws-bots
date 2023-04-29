@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsClient = exports.client = void 0;
 const express_1 = __importDefault(require("express"));
 const axios_1 = __importDefault(require("axios"));
 const { Readable } = require('stream');
@@ -24,9 +23,8 @@ const expressWs = require("express-ws")(app);
 const WebSocket = require('ws');
 const speech = require('@google-cloud/speech');
 const textToSpeech = require('@google-cloud/text-to-speech');
-exports.client = new speech.SpeechClient();
-exports.ttsClient = new textToSpeech.TextToSpeechClient();
-// const {transcribe,client,ttsClient} = require("./speech2text");
+const client = new speech.SpeechClient();
+const ttsClient = new textToSpeech.TextToSpeechClient();
 const port = process.env.PORT || 3000;
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
@@ -53,15 +51,6 @@ app.get('/ping', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         status: "ok"
     });
 }));
-// app.get('/trans_file', async (req, res) => {
-//     try{
-//         console.log('transcribe')
-//         const text = await transcribe();
-//         res.json(text).status(200);
-//     }catch(err){
-//         httpError(err, res);
-//     }
-// });
 app.get('/completitions', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const prompt = req.query.prompt;
@@ -113,7 +102,7 @@ app.ws("/transcribe", (ws, req) => __awaiter(void 0, void 0, void 0, function* (
         },
         interimResults: false,
     };
-    const gRecognizeStream = exports.client
+    const gRecognizeStream = client
         .streamingRecognize(request)
         .on("error", console.error)
         .on("data", (data) => {
@@ -169,7 +158,7 @@ app.ws("/assistant", (ws, req) => __awaiter(void 0, void 0, void 0, function* ()
         },
         interimResults: false,
     };
-    const gRecognizeStream = exports.client
+    const gRecognizeStream = client
         .streamingRecognize(request)
         .on("error", console.error)
         .on("data", (data) => __awaiter(void 0, void 0, void 0, function* () {
@@ -183,7 +172,7 @@ app.ws("/assistant", (ws, req) => __awaiter(void 0, void 0, void 0, function* ()
         });
         const completition_text = completion.data.choices[0].text;
         console.log(`completition_text ${completition_text}`);
-        const [ttsResponse] = yield exports.ttsClient.synthesizeSpeech({
+        const [ttsResponse] = yield ttsClient.synthesizeSpeech({
             input: { text: completition_text },
             voice: { languageCode: 'en-US', ssmlGender: 'NEUTRAL' },
             audioConfig: {

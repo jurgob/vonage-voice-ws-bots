@@ -6,10 +6,8 @@ const isBuffer = require('is-buffer')
 const chunkingStreams = require('chunking-streams');
 var SizeChunker = chunkingStreams.SizeChunker;
 
-
-const app = express();
-const expressWs = require("express-ws")(app);
-const WebSocket = require('ws');
+import  ExpressWS,{Application as WSApp} from 'express-ws';
+const app = ExpressWS(express()).app;
 
 const speech = require('@google-cloud/speech');
 const textToSpeech = require('@google-cloud/text-to-speech');
@@ -34,11 +32,6 @@ function httpError(err:any, res:any){
         res.status(500).json(err);
     }
 }
-
-//speech to text
-
-
-
 
 //http server
 app.use(express.json());
@@ -85,12 +78,11 @@ app.get('/models', async (req, res, next) => {
     } 
 });
 
-// @ts-ignore
 app.ws("/echo", async (ws, req) => {
     console.log("received ws connection echo");
     ws.on('message', (msg) => {
         setTimeout(() => {
-            if (ws.readyState === WebSocket.OPEN) ws.send(msg);
+            if (ws.readyState === ws.OPEN) ws.send(msg);
         }, 500); 
     });
   });
