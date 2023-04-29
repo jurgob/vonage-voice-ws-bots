@@ -18,9 +18,8 @@ const { Readable } = require('stream');
 const isBuffer = require('is-buffer');
 const chunkingStreams = require('chunking-streams');
 var SizeChunker = chunkingStreams.SizeChunker;
-const app = (0, express_1.default)();
-const expressWs = require("express-ws")(app);
-const WebSocket = require('ws');
+const express_ws_1 = __importDefault(require("express-ws"));
+const app = (0, express_ws_1.default)((0, express_1.default)()).app;
 const speech = require('@google-cloud/speech');
 const textToSpeech = require('@google-cloud/text-to-speech');
 const client = new speech.SpeechClient();
@@ -40,7 +39,6 @@ function httpError(err, res) {
         res.status(500).json(err);
     }
 }
-//speech to text
 //http server
 app.use(express_1.default.json());
 app.get('/_/health', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -79,17 +77,15 @@ app.get('/models', (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         httpError(err, res);
     }
 }));
-// @ts-ignore
 app.ws("/echo", (ws, req) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("received ws connection echo");
     ws.on('message', (msg) => {
         setTimeout(() => {
-            if (ws.readyState === WebSocket.OPEN)
+            if (ws.readyState === ws.OPEN)
                 ws.send(msg);
         }, 500);
     });
 }));
-// @ts-ignore
 app.ws("/transcribe", (ws, req) => __awaiter(void 0, void 0, void 0, function* () {
     const { webhook_url, webhook_method } = req.query;
     // axios
@@ -145,10 +141,8 @@ app.ws("/transcribe", (ws, req) => __awaiter(void 0, void 0, void 0, function* (
     });
 }));
 //ASSISTANT
-// @ts-ignore
 app.ws("/assistant", (ws, req) => __awaiter(void 0, void 0, void 0, function* () {
     const { webhook_url, webhook_method } = req.query;
-    // axios
     console.log("received ws connection transcribe", { webhook_method, webhook_url });
     const request = {
         config: {

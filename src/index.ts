@@ -87,7 +87,6 @@ app.ws("/echo", async (ws, req) => {
     });
   });
 
-// @ts-ignore
 app.ws("/transcribe", async (ws, req) => {
     const {webhook_url, webhook_method} = req.query;
     // axios
@@ -136,7 +135,7 @@ app.ws("/transcribe", async (ws, req) => {
         });
 
     ws.on('message', (msg) => {
-        if (ws.readyState === WebSocket.OPEN) {
+        if (ws.readyState === ws.OPEN) {
             if (typeof msg !== "string"){
                 gRecognizeStream.write(msg);
             }
@@ -150,12 +149,8 @@ app.ws("/transcribe", async (ws, req) => {
 })
 
 //ASSISTANT
-
-
-// @ts-ignore
 app.ws("/assistant", async (ws, req) => {
     const {webhook_url, webhook_method} = req.query;
-    // axios
     console.log("received ws connection transcribe", {webhook_method, webhook_url});
     const request = {
         config: {
@@ -226,7 +221,7 @@ app.ws("/assistant", async (ws, req) => {
         });
 
     ws.on('message', (msg: any) => {
-        if (ws.readyState === WebSocket.OPEN) {
+        if (ws.readyState === ws.OPEN) {
             if (typeof msg !== "string"){
                 gRecognizeStream.write(msg);
             }
