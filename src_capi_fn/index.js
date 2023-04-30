@@ -92,11 +92,11 @@ const voiceAnswer = async (req, res, next) => {
         // const wsboturl = `${WS_CALLBACK_URL}/echo`
         // let text = "hello, this is an echo bot, I will now repeat what you say"
 
-        // const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
-        // let text = "real time ttranscription"
+        const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
+        let text = "real time ttranscription"
         
-        const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/assistant&webhook_method=POST?token`
-        let text = "ask me anything"
+        // const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/assistant&webhook_method=POST?token`
+        // let text = "ask me anything"
 
         return res.json([
             {
@@ -127,7 +127,7 @@ const route = (app, express) => {
 
         try {
             const data = req.body
-            logger.info(data.results[0].alternatives[0].transcript, "TRANSCRIPTION RCV")
+            logger.info("TRANSCRIPTION RCV: ", data.results[0].alternatives[0].transcript)
             // console.log(`TRANSCRIPTION RCV: ${}`)
             // const { data } = await csClient.get(`/v3/users/${username}`)
             res.json(req.body)

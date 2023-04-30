@@ -7,7 +7,7 @@
     "node": "14.x"
   },
   "scripts": {
-    "start": "cd .. && source .env && cd src_capi_fn && conversation-api-function run .| bunyan"
+    "start": "cd .. && source .env && cd src_capi_fn && conversation-api-function run .| bunyan -o short "
   },
   "author": "",
   "license": "ISC",
