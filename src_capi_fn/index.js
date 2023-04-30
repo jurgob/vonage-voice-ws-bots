@@ -85,17 +85,18 @@ const voiceEvent = async (req, res, next) => {
 
 const voiceAnswer = async (req, res, next) => {
     const { logger, csClient,config } = req.nexmo;
-    logger.info("req", { req_body   : req.body})
+    // logger.info("req", { req_body   : req.body})
+    logger.info(`You Received a call to your LVN ${req.body.to} from: ${req.body.from}` )
     try {
         
         // const wsboturl = `${WS_CALLBACK_URL}/echo`
         // let text = "hello, this is an echo bot, I will now repeat what you say"
 
-        const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
-        let text = "real time ttranscription"
+        // const wsboturl = `${WS_CALLBACK_URL}/transcribe?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST`
+        // let text = "real time ttranscription"
         
-        // const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/transcriptions&webhook_method=POST?token`
-        // let text = "ask me anything"
+        const wsboturl = `${WS_CALLBACK_URL}/assistant?webhook_url=${config.server_url}/webhook/assistant&webhook_method=POST?token`
+        let text = "ask me anything"
 
         return res.json([
             {
@@ -126,13 +127,38 @@ const route = (app, express) => {
 
         try {
             const data = req.body
-            console.log(`TRANSCRIPTION RCV: ${data.results[0].alternatives[0].transcript}`)
+            logger.info(data.results[0].alternatives[0].transcript, "TRANSCRIPTION RCV")
+            // console.log(`TRANSCRIPTION RCV: ${}`)
             // const { data } = await csClient.get(`/v3/users/${username}`)
             res.json(req.body)
         } catch (err) {
             logger.error("Error on /api/users/:username route", err)
         }
     })
+
+    app.post("/webhook/assistant", async (req, res) => {
+        const { logger, csClient, config } = req.nexmo;
+
+        try {
+            const data = req.body
+            let type = data.type
+            let text = ""
+            if(type === "transcript"){
+                console.log(`data`, data)
+                text = data.data.results[0].alternatives[0].transcript
+            }else if(type === "assistant_response"){
+                text = data.data.choices[0].text
+            }
+
+            logger.info(`WEBOOK EVENT - ${type}: ${text}`)
+            // const { data } = await csClient.get(`/v3/users/${username}`)
+            res.json(req.body)
+        } catch (err) {
+            logger.error("Error on /api/users/:username route", err)
+        }
+    })
+
+
 }
 
 

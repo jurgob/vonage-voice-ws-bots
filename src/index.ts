@@ -104,30 +104,10 @@ app.ws("/transcribe", async (ws, req) => {
         .streamingRecognize(request)
         .on("error", console.error)
         .on("data", (data: any) => {
-            console.log('streaming rec res',data);
-
+            // console.log('streaming rec res',data);
             console.log('TRANSCRIBE> ',data.results[0].alternatives[0].transcript);
             if (webhook_url){
-
-                let webhook_request:any = {
-                    url: webhook_url,
-                    method: webhook_method,
-                };
-                if (webhook_method === 'POST'){
-                    webhook_request.data = data; 
-                }else if (webhook_method === 'GET'){
-                    webhook_request.params = data;
-                }
-                console.log(`webhook_request`, webhook_request)
-                //hit back the webhook in background
-                axios(webhook_request)
-                    .then((res) => {
-                        console.log(`statusCode: ${res.status}`)
-                        console.log(res)
-                    })
-                    .catch((error) => {
-                        console.error(error)
-                    })
+                http_callback(webhook_url.toString(), webhook_method?.toString(), data);     
             }
 
             // this.config.handler();
@@ -169,6 +149,12 @@ app.ws("/assistant", async (ws, req) => {
 
             const prompt = data.results[0].alternatives[0].transcript;
             console.log('TRANSCRIBE> ',prompt);
+            if (webhook_url){
+                http_callback(webhook_url.toString(), webhook_method?.toString(), {
+                    type: "transcript",
+                    data
+                });     
+            }
 
             const completion = await openai.createCompletion({
                model: "text-davinci-003",
@@ -176,7 +162,12 @@ app.ws("/assistant", async (ws, req) => {
                 max_tokens: 150,
             });
             const completition_text = completion.data.choices[0].text;
-            
+            if (webhook_url){
+                http_callback(webhook_url.toString(), webhook_method?.toString(), {
+                    type: "assistant_response",
+                    data:completion.data
+                });     
+            }
             console.log(`completition_text ${completition_text}`)
             const [ttsResponse] = await ttsClient.synthesizeSpeech({
                 input: {text: completition_text},
@@ -187,7 +178,7 @@ app.ws("/assistant", async (ws, req) => {
                 },
             })
 
-            console.log(`ttsResponse`, ttsResponse)
+            // console.log(`ttsResponse`, ttsResponse)
             var chunker = new SizeChunker({
                 chunkSize: 640 // must be a number greater than zero. 
             });
@@ -233,6 +224,30 @@ app.ws("/assistant", async (ws, req) => {
     });
 
 })
+
+
+async function http_callback(webhook_url:string,webhook_method:string ='GET', data:any ) {
+    let webhook_request:any = {
+        url: webhook_url,
+        method: webhook_method,
+    };
+    if (webhook_method === 'POST'){
+        webhook_request.data = data; 
+    }else if (webhook_method === 'GET'){
+        webhook_request.params = data;
+    }
+    // console.log(`<- webhook_request`, webhook_request)
+    //hit back the webhook in background
+    axios(webhook_request)
+        .then((res) => {
+            // console.log(``)
+            // console.log(`<-  request ${res.status}statusCode: ${res.status}`)
+            // console.log(res)
+        })
+        .catch((error) => {
+            console.error(error)
+        })
+}
 
 
 
